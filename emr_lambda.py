@@ -43,44 +43,6 @@ def get_emr_client():
         exit(0)
 
 
-def get_s3_client():
-    """
-    Method to create connection to s3
-    :return: boto3 client object to access s3
-    """
-    try:
-        return boto3.client('s3', region_name=REGION_NAME)
-    except Exception as e:
-        logger.info('Unable to connect to S3. ' + str(e))
-
-
-def get_latest_csv_file_path(bucket, prefix):
-    """
-    Method to get last modified key of a prefix in a bucket
-    directory
-    :return: SimpleNamespace object with success flag and error message if any
-    """
-    logger.info(bucket + prefix)
-    try:
-        objects = get_s3_client().list_objects(
-            Bucket=bucket,
-            Prefix=prefix
-        )['Contents']
-    except Exception as e:
-        logging.info('Unable to get latest file. ' + str(e))
-        return SimpleNamespace(success=False, error=str(e))
-
-    sorted_keys = [
-        obj['Key'] for obj in sorted(objects, key=lambda obj: int(
-            obj['LastModified'].strftime('%s')
-        ), reverse=True)
-    ]
-
-    file_path = sorted_keys[0]
-
-    return SimpleNamespace(success=True, key=file_path)
-
-
 def lambda_handler(event, context):
     """
 
@@ -88,15 +50,6 @@ def lambda_handler(event, context):
     :param context:
     :return:
     """
-
-    # Get the path of latest file to put into EMR
-    global INPUT_PATH
-    latest_csv = get_latest_csv_file_path(BUCKET, INPUT_PATH)
-
-    if latest_csv.success:
-        INPUT_PATH = 's3://{}/{}'.format(BUCKET, latest_csv.key)
-    else:
-        return 0
 
     try:
 
@@ -120,7 +73,7 @@ def lambda_handler(event, context):
                      },
 
                 ],
-                'Ec2KeyName': KEY_PAIR  # This allows us to ssh with the keypair
+                'Ec2KeyName': KEY_PAIR  #This allows us to ssh with the keypair
 
                 # Other available configurations for the instances
 
@@ -148,7 +101,8 @@ def lambda_handler(event, context):
                      'Args': [
                          'hadoop-streaming',
                          '-files',
-                         '{},{},{}'.format(MAPPER_PATH, REDUCER_PATH, INPUT_PATH),
+                         '{},{},{}'.format(MAPPER_PATH, REDUCER_PATH,
+                                           INPUT_PATH),
                          '-mapper', MAPPER_FILE,
                          '-input', INPUT_PATH,
                          '-output', OUTPUT_PATH,
