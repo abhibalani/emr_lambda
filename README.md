@@ -1,5 +1,6 @@
 # About
 Lambda to start EMR and run a map reduce job
+Read more: http://oddblogger.com/aws-lambda-emr-hadoop-map-reduce-python/
 
 ## Initialization & Set up
 1) Upload files to s3: Upload your mapper, reducer, input and initialization script to S3

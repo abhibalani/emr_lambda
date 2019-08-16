@@ -1,6 +1,4 @@
 """Lambda to launch EMR and start map reduce for an input"""
-from types import SimpleNamespace
-
 import boto3
 import logging
 
@@ -52,7 +50,7 @@ def lambda_handler(event, context):
     """
 
     try:
-
+        # Method to launch EMR cluster and run jobs
         get_emr_client().run_job_flow(
             Name='EMR Name',
             LogUri=LOGS_PATH,
@@ -92,7 +90,7 @@ def lambda_handler(event, context):
                     }
                 }
             ],
-            # Hadoop streaming command to start EMR
+            # Hadoop streaming command to start the map reduce job
             Steps=[
                 {'Name': 'Name of the Step',
                  'ActionOnFailure': 'TERMINATE_CLUSTER',
